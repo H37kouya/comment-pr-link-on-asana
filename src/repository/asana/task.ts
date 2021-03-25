@@ -12,7 +12,7 @@ export const createComment = async ({ client, taskGid, prLink }: CreateCommentPa
     await client.tasks.addComment(
       taskGid,
       {
-        "text": prLink
+        "text": `GitHub Link: ${prLink}`
       }
     )
   } catch (e) {
