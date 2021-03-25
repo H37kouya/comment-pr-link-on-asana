@@ -95,7 +95,7 @@ function run() {
             const client = github_1.getOctokit(token);
             /** pr 情報の取得 */
             const { pullRequest } = yield pullRequest_1.inProgressPullRequest(client);
-            console.info("pullRequest.url val", pullRequest.url);
+            console.info("pullRequest.url val", pullRequest.html_url);
             /**
              * PRの説明からAsanaのURLを取得する
              */
@@ -120,7 +120,7 @@ function run() {
                 taskGid
             });
             console.log('task item', task.name, task.tags, task.custom_fields);
-            yield task_1.createStory({
+            yield task_1.createComment({
                 client: asanaClient,
                 taskGid,
                 prLink: pullRequest.html_url
@@ -170,18 +170,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createStory = exports.getTask = void 0;
+exports.createComment = exports.getTask = void 0;
 const getTask = ({ client, taskGid }) => __awaiter(void 0, void 0, void 0, function* () {
     const task = yield client.tasks.findById(taskGid);
     return task;
 });
 exports.getTask = getTask;
-const createStory = ({ client, taskGid, prLink }) => __awaiter(void 0, void 0, void 0, function* () {
+const createComment = ({ client, taskGid, prLink }) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield client.stories.createOnTask(taskGid, {
-            "html_text": prLink,
-            "is_pinned": false,
-            "sticker_name": "PR Link",
+        yield client.tasks.addComment(taskGid, {
             "text": prLink
         });
     }
@@ -189,7 +186,7 @@ const createStory = ({ client, taskGid, prLink }) => __awaiter(void 0, void 0, v
         console.error(e);
     }
 });
-exports.createStory = createStory;
+exports.createComment = createComment;
 
 
 /***/ }),

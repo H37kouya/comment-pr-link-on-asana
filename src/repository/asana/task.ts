@@ -1,4 +1,4 @@
-import { CreateStoryParam } from "./params/CreateStoryParam";
+import { CreateCommentParam } from "./params/CreateCommentParam";
 import { GetTaskParam } from "./params/GetTaskParam";
 
 export const getTask = async ({ client, taskGid }: GetTaskParam) => {
@@ -7,14 +7,11 @@ export const getTask = async ({ client, taskGid }: GetTaskParam) => {
   return task;
 };
 
-export const createStory = async ({ client, taskGid, prLink }: CreateStoryParam) => {
+export const createComment = async ({ client, taskGid, prLink }: CreateCommentParam) => {
   try {
-    await client.stories.createOnTask(
+    await client.tasks.addComment(
       taskGid,
       {
-        "html_text": prLink,
-        "is_pinned": false,
-        "sticker_name": "PR Link",
         "text": prLink
       }
     )
