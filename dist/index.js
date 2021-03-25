@@ -120,6 +120,15 @@ function run() {
                 taskGid
             });
             console.log('task item', task.name, task.tags, task.custom_fields);
+            const tasksComment = yield task_1.getComments({
+                client: asanaClient,
+                taskGid
+            });
+            // 過去にPR Linkをコメントしているときは、コメントをしない
+            if (tasksComment.data.some((_comment) => _comment.text === `GitHub Link: ${pullRequest.html_url}`)) {
+                console.info('PR linkはすでにコメントされています。');
+                return;
+            }
             yield task_1.createComment({
                 client: asanaClient,
                 taskGid,
@@ -170,7 +179,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createComment = exports.getTask = void 0;
+exports.getComments = exports.createComment = exports.getTask = void 0;
 const getTask = ({ client, taskGid }) => __awaiter(void 0, void 0, void 0, function* () {
     const task = yield client.tasks.findById(taskGid);
     return task;
@@ -179,7 +188,7 @@ exports.getTask = getTask;
 const createComment = ({ client, taskGid, prLink }) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield client.tasks.addComment(taskGid, {
-            "text": prLink
+            "text": `GitHub Link: ${prLink}`
         });
     }
     catch (e) {
@@ -187,6 +196,11 @@ const createComment = ({ client, taskGid, prLink }) => __awaiter(void 0, void 0,
     }
 });
 exports.createComment = createComment;
+const getComments = ({ client, taskGid }) => __awaiter(void 0, void 0, void 0, function* () {
+    const comments = yield client.stories.findByTask(taskGid);
+    return comments;
+});
+exports.getComments = getComments;
 
 
 /***/ }),
