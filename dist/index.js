@@ -85,7 +85,6 @@ const asana_1 = __nccwpck_require__(7108);
 const task_1 = __nccwpck_require__(5294);
 const regex_1 = __nccwpck_require__(4689);
 const AsanaTaskUrl_1 = __nccwpck_require__(9190);
-const label_1 = __nccwpck_require__(465);
 const pullRequest_1 = __nccwpck_require__(583);
 // most @actions toolkit packages have async methods
 function run() {
@@ -93,13 +92,10 @@ function run() {
         try {
             const token = core_1.getInput("repo-token", { required: true });
             const asanaClientToken = core_1.getInput("asana-token", { required: true });
-            // ラベルに反映させないタグ
-            const ignoreTags = core_1.getInput("ignore-tags");
-            // 追加するカスタムフィールド
-            const customFields = core_1.getInput("custom-fields");
             const client = github_1.getOctokit(token);
             /** pr 情報の取得 */
             const { pullRequest } = yield pullRequest_1.inProgressPullRequest(client);
+            console.info("pullRequest.url val", pullRequest.html_url);
             /**
              * PRの説明からAsanaのURLを取得する
              */
@@ -124,22 +120,21 @@ function run() {
                 taskGid
             });
             console.log('task item', task.name, task.tags, task.custom_fields);
-            const ignoreTagsList = ignoreTags ? ignoreTags.split(',') : [];
-            const allowCustomFields = customFields ? customFields.split(',') : [];
-            console.info('process list val', ignoreTagsList, allowCustomFields);
-            const taskCustomFields = task.custom_fields.filter(cf => allowCustomFields.includes(cf.name));
-            console.info('taskCustomFields val', taskCustomFields);
-            const addLabelList = [
-                ...task.tags.map(tag => tag.name).filter((tag) => !ignoreTagsList.includes(tag)),
-                // @ts-ignore
-                ...taskCustomFields.map(cf => cf.display_value)
-            ].filter(_label => _label !== null);
-            console.info('addLabelList val', addLabelList);
-            if (addLabelList.length <= 0) {
-                console.info('追加するタグはありません');
+            const tasksComment = yield task_1.getComments({
+                client: asanaClient,
+                taskGid
+            });
+            // 過去にPR Linkをコメントしているときは、コメントをしない
+            if (tasksComment.data.some((_comment) => _comment.text === `GitHub Link: ${pullRequest.html_url}`)) {
+                console.info('PR linkはすでにコメントされています。');
                 return;
             }
-            yield label_1.addLabels(client, pullRequest.number, addLabelList);
+            yield task_1.createComment({
+                client: asanaClient,
+                taskGid,
+                prLink: pullRequest.html_url
+            });
+            return;
         }
         catch (e) {
             core_1.setFailed(e.message);
@@ -184,42 +179,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getTask = void 0;
+exports.getComments = exports.createComment = exports.getTask = void 0;
 const getTask = ({ client, taskGid }) => __awaiter(void 0, void 0, void 0, function* () {
     const task = yield client.tasks.findById(taskGid);
     return task;
 });
 exports.getTask = getTask;
-
-
-/***/ }),
-
-/***/ 465:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addLabels = void 0;
-const github_1 = __nccwpck_require__(5438);
-const addLabels = (client, prNumber, labels) => __awaiter(void 0, void 0, void 0, function* () {
-    yield client.issues.addLabels({
-        owner: github_1.context.repo.owner,
-        repo: github_1.context.repo.repo,
-        issue_number: prNumber,
-        labels: labels
-    });
+const createComment = ({ client, taskGid, prLink }) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield client.tasks.addComment(taskGid, {
+            "text": `GitHub Link: ${prLink}`
+        });
+    }
+    catch (e) {
+        console.error(e);
+    }
 });
-exports.addLabels = addLabels;
+exports.createComment = createComment;
+const getComments = ({ client, taskGid }) => __awaiter(void 0, void 0, void 0, function* () {
+    const comments = yield client.stories.findByTask(taskGid);
+    return comments;
+});
+exports.getComments = getComments;
 
 
 /***/ }),

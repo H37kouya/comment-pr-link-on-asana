@@ -1,7 +1,7 @@
 import { getInput, setFailed } from "@actions/core";
 import { getOctokit } from "@actions/github";
 import { createAsanaClient } from "./repository/asana";
-import { createStory, getTask } from "./repository/asana/task";
+import { createComment, getTask, getComments } from "./repository/asana/task";
 import { extractionAsanaUrl } from "./utils/regex";
 import { AsanaTaskUrl } from "./domain/AsanaTaskUrl";
 import { inProgressPullRequest } from "./service/pullRequest";
@@ -16,7 +16,7 @@ async function run() {
 
     /** pr 情報の取得 */
     const { pullRequest } = await inProgressPullRequest(client)
-    console.info("pullRequest.url val", pullRequest.url)
+    console.info("pullRequest.url val", pullRequest.html_url)
 
     /**
      * PRの説明からAsanaのURLを取得する
@@ -45,11 +45,22 @@ async function run() {
     });
     console.log('task item', task.name, task.tags, task.custom_fields);
 
-    await createStory({
+    const tasksComment = await getComments({
+      client: asanaClient,
+      taskGid
+    })
+    // 過去にPR Linkをコメントしているときは、コメントをしない
+    if (tasksComment.data.some((_comment) => _comment.text === `GitHub Link: ${pullRequest.html_url}`)) {
+      console.info('PR linkはすでにコメントされています。')
+      return
+    }
+
+    await createComment({
       client: asanaClient,
       taskGid,
-      prLink: pullRequest.url
+      prLink: pullRequest.html_url
     })
+    return
   } catch (e) {
     setFailed(e.message);
   }
