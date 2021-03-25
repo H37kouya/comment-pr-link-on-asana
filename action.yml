@@ -1,5 +1,5 @@
-name: 'synchronize-pr-and-asana'
-description: 'AsanaのタグをPRのラベルに反映させる'
+name: 'comment-pr-link-on-asana'
+description: 'Asana のコメントに GitHub Pull Requestのリンクをコメントする'
 inputs:
   repo-token:
     description: 'GitHub Token'

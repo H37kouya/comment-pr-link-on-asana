@@ -1,25 +1,25 @@
-# Asana のタグを PR のタグに反映させる
+# Asana のコメントに GitHub Pull Requestのリンクをコメントする
 
 ## Description
 
-AsanaのタグをPRのラベルに反映させる
+Asana のコメントに GitHub Pull Requestのリンクをコメントする
 
 ## Usage
 
-Create `.github/workflows/synchronize-pr-and-asana.yml`
+Create `.github/workflows/comment-pr-link-on-asana.yml`
 
 ### Simple Usage
 
 ```yaml
-name: "synchronize-pr-and-asana"
+name: "comment-pr-link-on-asana"
 on:
   pull_request:
 
 jobs:
-  synchronize-pr-and-asana:
+  comment-pr-link-on-asana:
     runs-on: ubuntu-latest
     steps:
-    - uses: H37kouya/synchronize-pr-and-asana@v1
+    - uses: H37kouya/comment-pr-link-on-asana@v1
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         asana-token: "${{ secrets.ASANA_PERSONAL_ACCESS_TOKEN }}"
@@ -29,14 +29,12 @@ jobs:
 ### Inputs
 
 Inputs
-Various inputs are defined in action.yml to let you configure the synchronize-pr-and-asana:
+Various inputs are defined in action.yml to let you configure the comment-pr-link-on-asana:
 
 | Name | Description | Default |
 | ---|---|---|
 | repo-token | Token to use to authorize label changes. Typically the GITHUB_TOKEN secret | N/A |
 | asana-token | Token to use to authorize asana. | N/A |
-| ignore-tags | ラベルに反映させないタグ <br> example: "優先度,ステータス" | '' |
-| custom-fields | The name of the tag you want to reflect in the PR <br> example: "優先度,ステータス" | '' |
 
 ## Code in developer
 
