@@ -48,8 +48,9 @@ async function run() {
     await createStory({
       client: asanaClient,
       taskGid,
-      prLink: pullRequest.url
+      prLink: pullRequest.html_url
     })
+    return
   } catch (e) {
     setFailed(e.message);
   }

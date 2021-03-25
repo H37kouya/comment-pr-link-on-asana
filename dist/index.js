@@ -123,8 +123,9 @@ function run() {
             yield task_1.createStory({
                 client: asanaClient,
                 taskGid,
-                prLink: pullRequest.url
+                prLink: pullRequest.html_url
             });
+            return;
         }
         catch (e) {
             core_1.setFailed(e.message);
@@ -176,7 +177,17 @@ const getTask = ({ client, taskGid }) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.getTask = getTask;
 const createStory = ({ client, taskGid, prLink }) => __awaiter(void 0, void 0, void 0, function* () {
-    yield client.stories.createOnTask(taskGid, prLink);
+    try {
+        yield client.stories.createOnTask(taskGid, {
+            "html_text": prLink,
+            "is_pinned": false,
+            "sticker_name": "PR Link",
+            "text": prLink
+        });
+    }
+    catch (e) {
+        console.error(e);
+    }
 });
 exports.createStory = createStory;
 

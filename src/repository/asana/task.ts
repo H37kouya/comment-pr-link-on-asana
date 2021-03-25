@@ -8,8 +8,17 @@ export const getTask = async ({ client, taskGid }: GetTaskParam) => {
 };
 
 export const createStory = async ({ client, taskGid, prLink }: CreateStoryParam) => {
-  await client.stories.createOnTask(
-    taskGid,
-    prLink
-  )
+  try {
+    await client.stories.createOnTask(
+      taskGid,
+      {
+        "html_text": prLink,
+        "is_pinned": false,
+        "sticker_name": "PR Link",
+        "text": prLink
+      }
+    )
+  } catch (e) {
+    console.error(e)
+  }
 }
